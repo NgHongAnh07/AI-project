@@ -83,3 +83,4 @@ def train_model(model, train_loader, val_loader, device):
             f"Train Loss: {train_epoch_loss:.4f} | "
             f"Val Loss: {val_loss:.4f}"
         )
+        
