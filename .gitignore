@@ -1,0 +1,19 @@
+# 1. Data and CSVs (Do NOT upload images to GitHub)
+data/
+outputs/
+*.csv
+
+# 2. Python environment and cache
+__pycache__/
+venv/
+.env
+.ipynb_checkpoints/
+
+# 3. OS specific files
+.DS_Store
+Thumbs.db
+
+# 4. Large Model weights
+*.pth
+*.weights
+*.onnx
