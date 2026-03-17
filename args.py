@@ -17,3 +17,4 @@ def get_args():
     parser.add_argument('--wd', type=float, default=0.0005, help='Weight decay for the optimizer')
     
     return parser.parse_args()
+    
