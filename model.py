@@ -11,3 +11,4 @@ def build_model(backbone: str):
     else:
         weights = torchvision.models.detection.FasterRCNN_MobileNet_V3_Large_FPN_Weights
         model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(pretrained=True,weights=weights)
+        
