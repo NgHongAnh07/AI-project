@@ -1,2 +1,1 @@
-# AI_Project1
-rtrtrty
+# project1
