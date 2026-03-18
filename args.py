@@ -7,6 +7,8 @@ def get_args():
 
     parser.add_argument('--csv_dir', type=str, default='./data/CSVs')
 
+    parser.add_argument('--num_classes', type=int, default= 1)
+
     parser.add_argument('--out_dir', type=str, default='./sessions')
 
     parser.add_argument('--batch_size', type=int, default=8,
