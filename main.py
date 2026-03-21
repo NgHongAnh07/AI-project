@@ -11,7 +11,8 @@ def collate(batch):
 
 def main():
     args = get_args()
-
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+   
     # 1. Read the dataframes
     train_df = pd.read_csv(os.path.join(args.csv_dir, 'train_df.csv'))
     val_df =  pd.read_csv(os.path.join(args.csv_dir, 'val_df.csv'))
@@ -29,6 +30,10 @@ def main():
     #4 Initializing the model
     model = build_model(args.backbone, args.num_classes + 1)
 
+    # 5. Train the model
+    train_model(model, train_loader, val_loader, device)
+
+    
     print()
 
 if __name__ == "__main__":
