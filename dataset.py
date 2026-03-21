@@ -1,42 +1,48 @@
-import os
 import torch
-import pandas as pd
 from PIL import Image
-from torch.utils.data import Dataset
-import torchvision.transforms as T
+from torchvision.transforms.functional import to_tensor
+from args import get_args
 
-class ObjDetectionDataset(Dataset):
-    def __init__(self, df, transforms=None):
-        self.df = df
-        self.transforms = transforms if transforms else T.Compose([T.ToTensor()])
+
+class ObjDetectionDataset(torch.utils.data.Dataset):
+    def __init__(self, df):
+        self.df = df.reset_index(drop=True)
 
     def __len__(self):
         return len(self.df)
 
     def __getitem__(self, idx):
-        img_path = self.df.iloc[idx, 0]
-        label_path = self.df.iloc[idx, 1]
+        args = get_args()
+        # TODO 1: Get the row number idx from dataframe
+        # your code here
+        row = self.df.iloc[idx]
 
+        img = Image.open(row["image_path"]).convert("RGB")
+        w, h = img.size
         
-        img = Image.open(img_path).convert("RGB")
-
-        boxes = []
-        labels = []
+        img = img.resize((args.image_size, args.image_size))
         
-        if os.path.exists(label_path):
-            with open(label_path, "r") as f:
-                for line in f:
-                    data = line.strip().split()
-                    if len(data) == 5:
+        image = to_tensor(img)
 
-                        labels.append(int(data[0]))
-                        boxes.append([float(x) for x in data[1:]])
+        boxes, labels = [], []
+        with open(row["label_path"]) as f:
+            for line in f:
+                cls, xc, yc, bw, bh = map(float, line.split())
+                x1 = (xc - bw/2) * w
+                y1 = (yc - bh/2) * h
+                x2 = (xc + bw/2) * w
+                y2 = (yc + bh/2) * h
+                
+                x1, y1, x2, y2 = resize_box_xyxy((x1, y1, x2, y2),  w, h , args.image_size, args.image_size)
+                
+                boxes.append([x1, y1, x2, y2])
+                labels.append(int(cls) + 1)
 
-        target = {}
-        target["boxes"] = torch.as_tensor(boxes, dtype=torch.float32)
-        target["labels"] = torch.as_tensor(labels, dtype=torch.int64)
-        
-        if self.transforms:
-            img = self.transforms(img)
-
-        return img, target
+        target = {
+            "boxes": torch.tensor(boxes, dtype=torch.float32),
+            "labels": torch.tensor(labels, dtype=torch.int64),
+            "image_id": torch.tensor([idx]),
+        }
+        # TODO 2: Return what you need from this class
+        # your code here
+        return image, target
