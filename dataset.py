@@ -2,6 +2,7 @@ import torch
 from PIL import Image
 from torchvision.transforms.functional import to_tensor
 from args import get_args
+from utils import resize_box_xyxy
 
 
 class ObjDetectionDataset(torch.utils.data.Dataset):
