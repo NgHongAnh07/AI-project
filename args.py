@@ -1,19 +1,25 @@
 import argparse
 
 def get_args():
-    parser = argparse.ArgumentParser(description="AI Training Pipeline for Object Detection")    
-    parser.add_argument('--csv_dir', type=str, default='data/CSVs', 
-                        help='Directory containing train_df.csv and val_df.csv')
-    parser.add_argument('--out_dir', type=str, default='outputs', 
-                        help='Directory to save the best model weights')
+    parser = argparse.ArgumentParser(description="Model training options")
+
+    parser.add_argument('--backbone', type=str, default='fasterrcnn_resnet50_fpn', choices=['fasterrcnn_resnet50_fpn', 'fasterrcnn_mobilenet_v3'])
+
+    parser.add_argument('--csv_dir', type=str, default='./data/CSVs')
+
+    parser.add_argument('--num_classes', type=int, default= 1)
+
+    parser.add_argument('--image_size', type=int, default=512)
+
+    parser.add_argument('--out_dir', type=str, default='./sessions')
+
+    parser.add_argument('--batch_size', type=int, default=8,
+                        choices=[8, 16, 32, 64])
     
-    parser.add_argument('--backbone', type=str, default='fasterrcnn_resnet50_fpn', 
-                        help='Backbone architecture (resnet50 or mobilenet)')
-    parser.add_argument('--num_classes', type=int, default=2, 
-                        help='Number of classes (including background)')
-    parser.add_argument('--epochs', type=int, default=10, help='Number of training epochs')
-    parser.add_argument('--batch_size', type=int, default=4, help='Batch size (smaller is safer for Faster R-CNN)')
-    parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate')
-    parser.add_argument('--wd', type=float, default=0.0005, help='Weight decay for the optimizer')
-    
+    parser.add_argument('--epochs', type=int, default=100)
+
+    parser.add_argument('--lr', type=float, default=0.001)
+
+    parser.add_argument('--wd', type=float, default=1e-4)
+
     return parser.parse_args()
