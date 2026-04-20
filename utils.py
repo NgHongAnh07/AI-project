@@ -1,4 +1,3 @@
-
 import matplotlib.pyplot as plt  # New
 import matplotlib.patches as patches  # New
 import numpy as np
