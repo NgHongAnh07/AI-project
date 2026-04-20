@@ -2,13 +2,19 @@ import torch
 from PIL import Image
 import os
 from args import get_args
-from utils import resize_box_xyxy
+
 from torchvision.transforms.functional import to_tensor
 
 class ObjDetectionDataset(torch.utils.data.Dataset):
-    def __init__(self, df):
+    def __init__(self, df, transforms=None):
+        """
+        Args:
+            df: Dataframe containing image and label paths
+            transforms: Professional augmentation pipeline from augmentations.py
+        """
         self.df = df.reset_index(drop=True)
         self.args = get_args()
+        self.transforms = transforms
 
     def __len__(self):
         return len(self.df)
@@ -18,37 +24,30 @@ class ObjDetectionDataset(torch.utils.data.Dataset):
         row = self.df.iloc[idx]
 
         # 2. Load image
-        img_path = row["images"].replace("\\", os.sep)
+        img_path = row["images"].replace("\\", os.sep) 
         img = Image.open(img_path).convert("RGB")
         w, h = img.size
         
-        # Resize image
-        img = img.resize((self.args.image_size, self.args.image_size))
-        image = to_tensor(img)
-
         boxes, labels = [], []
         
-        # 3. Load labels
-        label_path = row["label_path"].replace("\\", os.sep)
+        # 3. Load labels (YOLO format: xc, yc, bw, bh normalized)
+        label_path = row["labels"].replace("\\", os.sep) 
         if os.path.exists(label_path):
             with open(label_path) as f:
                 for line in f:
                     cls, xc, yc, bw, bh = map(float, line.split())
                     
+                    # Convert YOLO format to Pascal VOC (x1, y1, x2, y2) in absolute pixels
                     x1 = (xc - bw/2) * w
                     y1 = (yc - bh/2) * h
                     x2 = (xc + bw/2) * w
                     y2 = (yc + bh/2) * h
                     
-                    x1, y1, x2, y2 = resize_box_xyxy(
-                        (x1, y1, x2, y2), w, h, 
-                        self.args.image_size, self.args.image_size
-                    )
-                    
                     boxes.append([x1, y1, x2, y2])
+                    # Class 0 becomes Class 1 (Class 0 is reserved for background)
                     labels.append(int(cls) + 1)
 
-        # 4. Handle case with no boxes
+        # 4. Prepare target dictionary
         if len(boxes) == 0:
             target_boxes = torch.zeros((0, 4), dtype=torch.float32)
             target_labels = torch.zeros((0,), dtype=torch.int64)
@@ -61,5 +60,12 @@ class ObjDetectionDataset(torch.utils.data.Dataset):
             "labels": target_labels,
             "image_id": torch.tensor([idx]),
         }
+
+        # 5. Apply Professional Augmentations
+        if self.transforms is not None:
+            image, target = self.transforms(img, target)
+        else:
+            # Fallback to basic tensor conversion if no transforms are provided
+            image = to_tensor(img)
 
         return image, target
