@@ -17,8 +17,9 @@ def collate(batch):
     return list(images),list(targets)
 
 def main():
-    print("I am start running")
     args = get_args()
+    print(f"Starting training")
+    print(f"Epochs: {args.epochs} | Batch Size: {args.batch_size} | Image Size: {args.image_size}")
 
     #1. Read the dataframes
     train_df = pd.read_csv(os.path.join(args.csv_dir,'train_df.csv'))
@@ -37,12 +38,12 @@ def main():
 
     #4.Initializing the model
     model = build_model(args.backbone,num_classes = args.num_classes + 1)
-    print("I am in Here")
+    
     #5. Train the model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     train_model(model,train_loader,val_loader,device)
     
-    print("me")
+    print("\nTraining complete!")
 
 if __name__ == '__main__':
     main()
